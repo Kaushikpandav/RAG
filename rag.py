@@ -4,8 +4,8 @@ from langchain.schema import Generation, LLMResult
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-# from langchain_community.vectorstores import Chroma
-from langchain_chroma import Chroma
+from langchain_community.vectorstores import Chroma
+# from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chains.combine_documents import create_stuff_documents_chain  # Updated import
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
@@ -104,8 +104,8 @@ class Gemini2LLM(BaseLLM):
 class RAGSystem:
     def __init__(self, api_key):
         self.llm = Gemini2LLM(api_key=api_key)
-        # self.embedding_function = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-        self.embedding_function = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        self.embedding_function = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+        # self.embedding_function = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         self.vectorstore = None
         # Initialize with a default empty Chroma database
         self.vectorstore = Chroma(
