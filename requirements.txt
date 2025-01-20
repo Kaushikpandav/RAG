@@ -1,10 +1,12 @@
 Flask  
 langchain  
+langchain
+transformers
+sentence-transformers  
 langchain-community  
 langchain-core  
 requests  
 pydantic  
-sentence-transformers  
 chromadb  
 pandas  
 numpy  
