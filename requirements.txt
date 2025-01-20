@@ -7,7 +7,6 @@ langchain-community
 langchain-core  
 requests  
 pydantic  
-sqlite3
 chromadb  
 pandas  
 numpy  
