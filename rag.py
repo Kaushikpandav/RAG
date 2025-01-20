@@ -18,7 +18,8 @@ import os
 import sqlite3
 from datetime import datetime
 import uuid
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain.embeddings import HuggingFaceEmbeddings
+# from langchain_huggingface import HuggingFaceEmbeddings
 
 
 
