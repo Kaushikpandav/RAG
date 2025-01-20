@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Chat Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .message-bubble {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing-indicator::after {
+            content: '...';
+            animation: typing 1s infinite;
+        }
+
+        @keyframes typing {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">RAG Chat Assistant</h1>
+            <p class="text-gray-600">Upload your documents and start chatting!</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Upload Section -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-upload mr-2 text-blue-500"></i>
+                        Document Upload
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
+                            <input type="file" id="fileInput" accept=".pdf" class="hidden">
+                            <label for="fileInput" class="cursor-pointer">
+                                <i class="fas fa-file-pdf text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-sm text-gray-600">Drag & drop your PDF here or click to browse</p>
+                            </label>
+                        </div>
+                        <button onclick="uploadFile()" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i>
+                            Upload Document
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Document List -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-file-alt mr-2 text-green-500"></i>
+                        Uploaded Documents
+                    </h2>
+                    <div id="documentList" class="space-y-2">
+                        <!-- Documents will be listed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-6 h-[800px] flex flex-col">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-comments mr-2 text-purple-500"></i>
+                        Chat Interface
+                    </h2>
+                    
+                    <!-- Chat History -->
+                    <div id="chatHistory" class="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
+                        <!-- Welcome Message -->
+                        <div class="message-bubble flex items-start">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="ml-3 bg-gray-100 rounded-lg p-4 max-w-[80%]">
+                                <p class="text-gray-800">
+                                    Hello! I'm your RAG assistant. Please upload a document to get started, and I'll help you analyze and understand its contents.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="border-t pt-4">
+                        <div class="flex space-x-4">
+                            <input type="text" id="messageInput" 
+                                   class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                   placeholder="Type your message here..."
+                                   onkeypress="if(event.key === 'Enter') sendMessage()">
+                            <button onclick="sendMessage()" 
+                                    class="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600 transition-colors flex items-center">
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+
+        function addMessageToChat(sender, message, isError = false) {
+            const chatHistory = document.getElementById('chatHistory');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-bubble flex items-start ' + (sender === 'User' ? 'justify-end' : '');
+            
+            let iconClass = 'fas fa-robot';
+            let bgColor = 'bg-purple-500';
+            if (sender === 'User') {
+                iconClass = 'fas fa-user';
+                bgColor = 'bg-blue-500';
+            } else if (isError) {
+                iconClass = 'fas fa-exclamation-triangle';
+                bgColor = 'bg-red-500';
+            }
+
+            const content = `
+                ${sender === 'User' ? '' : `
+                <div class="flex-shrink-0 w-8 h-8 rounded-full ${bgColor} flex items-center justify-center text-white">
+                    <i class="${iconClass}"></i>
+                </div>`}
+                <div class="mx-3 ${sender === 'User' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg p-4 max-w-[80%]">
+                    <p>${message}</p>
+                </div>
+                ${sender === 'User' ? `
+                <div class="flex-shrink-0 w-8 h-8 rounded-full ${bgColor} flex items-center justify-center text-white">
+                    <i class="${iconClass}"></i>
+                </div>` : ''}
+            `;
+            
+            messageDiv.innerHTML = content;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                addMessageToChat('System', 'Please select a file first', true);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                addMessageToChat('System', 'Uploading document, please wait...');
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if (result.error) {
+                    addMessageToChat('System', result.error, true);
+                } else {
+                    addMessageToChat('System', result.message);
+                    fileInput.value = '';
+                    updateDocumentList();
+                }
+            } catch (error) {
+                addMessageToChat('System', 'Upload failed: ' + error.message, true);
+            }
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessageToChat('User', message);
+            messageInput.value = '';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: sessionId
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.error) {
+                    addMessageToChat('System', result.error, true);
+                } else {
+                    sessionId = result.session_id;
+                    addMessageToChat('Assistant', result.response);
+                }
+            } catch (error) {
+                addMessageToChat('System', 'Failed to get response: ' + error.message, true);
+            }
+        }
+
+        async function updateDocumentList() {
+            try {
+                const response = await fetch('/documents');
+                const result = await response.json();
+                
+                const documentList = document.getElementById('documentList');
+                documentList.innerHTML = '';
+                
+                if (result.documents && result.documents.length > 0) {
+                    result.documents.forEach(doc => {
+                        const docElement = document.createElement('div');
+                        docElement.className = 'flex items-center justify-between p-2 bg-gray-50 rounded-lg';
+                        docElement.innerHTML = `
+                            <div class="flex items-center">
+                                <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+                                <span class="text-sm text-gray-600">${doc.preview}</span>
+                            </div>
+                            <button onclick="deleteDocument('${doc.id}')" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+                        documentList.appendChild(docElement);
+                    });
+                } else {
+                    documentList.innerHTML = '<p class="text-gray-500 text-center">No documents uploaded yet</p>';
+                }
+            } catch (error) {
+                console.error('Failed to update document list:', error);
+            }
+        }
+
+        async function deleteDocument(docId) {
+            try {
+                const response = await fetch(`/delete/${docId}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (result.message) {
+                    updateDocumentList();
+                    addMessageToChat('System', 'Document deleted successfully');
+                }
+            } catch (error) {
+                addMessageToChat('System', 'Failed to delete document: ' + error.message, true);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDocumentList();
+            
+            // Add drag and drop support
+            const dropZone = document.querySelector('.border-dashed');
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-blue-500');
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('border-blue-500');
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-500');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    document.getElementById('fileInput').files = files;
+                    uploadFile();
+                }
+            });
+        });
+
+        // Handle Enter key in message input
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
