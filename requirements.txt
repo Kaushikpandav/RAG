@@ -9,4 +9,5 @@ requests
 pydantic  
 chromadb  
 pandas  
+pypdf
 numpy  
