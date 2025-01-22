@@ -11,10 +11,5 @@
       "src": "/(.*)",
       "dest": "rag.py"
     }
-  ],
-  "env": {
-    "FLASK_ENV": "production",
-    "API_KEY": "AIzaSyBDildpe8ouXivODeTJOF4k-fLbC6eSjfE",
-    "DB_NAME": "rag_app.db"
-  }
+  ]
 }
