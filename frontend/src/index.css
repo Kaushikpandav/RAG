@@ -1,0 +1,162 @@
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  /* MacOS-like abstract wallpaper */
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 20%, #E0C3FC 40%, #8EC5FC 60%, #E0C3FC 80%, #9FA8DA 100%);
+  background-size: 200% 200%;
+  animation: gradientBG 15s ease infinite;
+
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+
+  /* Centering the App Window */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  /* Prevent scrolling on the body */
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+:root {
+  /* ... Previous vars ... */
+  --color-bg-primary: #1e1e1e;
+  /* Darker window bg */
+  --color-bg-secondary: #252526;
+  /* Sidebar bg */
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-accent: #38bdf8;
+  --color-accent-hover: #0ea5e9;
+  --color-border: #3e3e42;
+
+  --glass-bg: rgba(30, 30, 30, 0.85);
+  /* Glass effect base */
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.5);
+
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border);
+}
+
+
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+/* Responsive Sidebar Styles */
+.mobile-only {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block !important;
+  }
+
+  /* Sidebar becomes a drawer on mobile */
+  .sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px !important;
+    background-color: var(--color-bg-secondary);
+    transform: translateX(-100%);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Header adjustment for hamburger */
+  main header {
+    padding-left: 0.5rem;
+  }
+}
+
+/* App Window Styles - extracted from inline */
+.app-window {
+  display: flex;
+  width: 900px;
+  height: 85vh;
+  max-height: 900px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--glass-border);
+  background: var(--color-bg-primary);
+  backdrop-filter: blur(20px);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  body {
+    align-items: flex-start;
+    /* Align top on mobile */
+    background: var(--color-bg-primary);
+    min-height: 100dvh;
+    /* Use dynamic viewport height */
+    height: 100dvh;
+    overflow: hidden;
+    /* Lock body scroll */
+  }
+
+  .app-window {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    flex-direction: column;
+    margin: 0;
+  }
+
+  .container {
+    padding: 0 var(--spacing-sm);
+    /* Reduce padding on mobile */
+  }
+}

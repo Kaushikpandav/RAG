@@ -1,0 +1,37 @@
+fastapi
+uvicorn
+python-dotenv
+langchain
+langchain-community
+langchain-core
+langchain-openai
+langchain-chroma
+langchain-huggingface
+chromadb==0.5.0
+posthog<3.0.0
+numpy<2.0
+pypdf
+beautifulsoup4
+unstructured
+tiktoken
+httpx
+pydantic-settings
+backoff
+
+
+
+
+
+# ==========
+# who is the owner of Nvidia?
+# "How do I manage memory in CUDA C++?"
+# "Explain the difference between host and device code."
+# "What are the key features of the Ada Lovelace architecture?"
+# "How does the Hopper architecture improve AI performance?"
+# "What is the difference between Ampere and Hopper GPUs?"
+# "Tell me about DLSS 3 technology.
+# what OpenAI does nowadays??
+
+# "How do OpenAI embeddings work?"
+# "How can I use the OpenAI API for text generation?"
+# "What are the usage policies for OpenAI models?"
